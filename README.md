@@ -10,25 +10,27 @@ This example shows how to create an action that can be integrated with the built
 3. [Clean up](#3-clean-up)
 
 # 1. Configure Cloudant
-Log into Bluemix, create a [Cloudant database instance](https://console.ng.bluemix.net/catalog/services/cloudant-nosql-db/), and name it `openwhisk-cloudant`. Launch the Cloudant web console and create a database named `cats`.
+Log into Bluemix, create a [Cloudant database instance](https://console.ng.bluemix.net/catalog/services/cloudant-nosql-db/), and name it `openwhisk-cloudant`. Launch the Cloudant web console and create a database named `cats`. Extract the username and password from the "Service Credentials" tab in Bluemix.
 
-Extract the username and password from the "Service Credentials" tab in Bluemix. Use them in the commands below.
+In this demo, we will make use of the Cloudant package, which contains a set of OpenWhisk actions and feeds that integrate with a Cloudant database. Use the OpenWhisk CLI to bind the Cloudant package using your credentials. Binding a package allows you to set the default parameters that are inherited by every action and feed in the package. 
 
 ```bash
-# Bind Cloudant service as a package in OpenWhisk
 wsk package bind /whisk.system/cloudant "openwhisk-cloudant" \
   --param username "$CLOUDANT_USERNAME" \
   --param password "$CLOUDANT_PASSWORD" \
   --param host "$CLOUDANT_USERNAME.cloudant.com"
+```
 
-# Create trigger to fire events when data is inserted
+Triggers are a named channel for a class of event and can be explicitly fired by a user or fired on behalf of a user by an external event source, such as a feed. Use the code below to create a trigger to fire events when data is inserted into the "cats" database using the "changes" feed provided in the Cloudant package we just bound.
+```bash
 wsk trigger create data-inserted-trigger \
   --feed "/_/openwhisk-cloudant/changes" \
   --param dbname "cats"
 ```
 
 # 2. Create OpenWhisk actions
-## Create a file named `process-change.js`
+Create a file named `process-change.js`. This file will define an OpenWhisk action written as a JavaScript function. This function will print out data that is written to Cloudant. For this example, we are expecting a cat with fields `name` and `color`.
+
 ```javascript
 function main(params) {
 
@@ -57,22 +59,26 @@ function main(params) {
 ```
 
 ## Create action sequence and map to trigger
+Create an OpenWhisk action from the JavaScript function that we just created.
 ```bash
-# Upload action above that responds to database insertions
 wsk action create process-change process-change.js
-
-# Unit test the new action directly
+```
+OpenWhisk actions are stateless code snippets that can be invoked explicitly or in response to an event. To verify the creation of our action, invoke the action explicitly using the code below and pass the parameters using the --param command line argument.
+```bash
 wsk action invoke \
   --blocking \
   --param name Tahoma \
   --param color Tabby \
   process-change
-
-# Create sequence that ties built-in Cloudant "read" action to action above
+```
+Chain together multiple actions using a sequence. Here we will connect the cloudant "read" action with the "process-change" action we just created. The parameters (`name` and `color`) outputed from the cloudant "read" action will be passed automatically into our "process-change" action. 
+``` bash
 wsk action create process-change-cloudant-sequence \
   --sequence /_/openwhisk-cloudant/read,process-change
+```
 
-# Create rule that maps database change trigger to sequence
+Rules map triggers with actions. Create a rule that maps the database change trigger to the sequence we just created. Once this rule is created, the actions (or sequence of actions) will be executed whenever the trigger is fired in response to new data inserted into the cloudant database. 
+```bash
 wsk rule create log-change-rule data-inserted-trigger process-change-cloudant-sequence
 ```
 
