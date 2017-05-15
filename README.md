@@ -99,8 +99,8 @@ wsk activation poll
 In the Cloudant dashboard, create a new document in the "cats" database.
 ```json
 {
-  "name": "Tahoma",
-  "color": "Tabby"
+  "name": "Tarball",
+  "color": "Black"
 }
 ```
 
