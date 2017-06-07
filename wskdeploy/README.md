@@ -1,6 +1,6 @@
 # Whisk Deploy - Cloudant Trigger 
 
-Download latest `wskdeploy` from the [release page] (https://github.com/apache/incubator-openwhisk-wskdeploy/releases) of [openwhisk-wskdeploy](https://github.com/apache/incubator-openwhisk-wskdeploy) project.
+Download latest `wskdeploy` from the [release page](https://github.com/apache/incubator-openwhisk-wskdeploy/releases) of [openwhisk-wskdeploy](https://github.com/apache/incubator-openwhisk-wskdeploy) project.
 
 ## Pre-requisites:
 
@@ -18,7 +18,7 @@ export CLOUDANT_DATABASE="cats"
 
 ## Deployment:
 
-Clone Cloudant Trigger repo and run wskdeploy:
+Clone [Cloudant Trigger](https://github.com/IBM/openwhisk-cloudant-trigger) repo and run `wskdeploy`:
 
 ```
 git clone https://github.com/IBM/openwhisk-cloudant-trigger.git
