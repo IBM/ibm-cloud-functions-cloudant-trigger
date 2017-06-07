@@ -126,7 +126,7 @@ wsk action delete process-change
 # Remove package
 wsk package delete "openwhisk-cloudant"
 ```
-# Automate Deployment
+# Automation
 
 You can use an OpenWhisk deployment automation tool to automate deployment of Cloudant Trigger. Please follow the instructions in wskdeploy [README](wskdeploy/README.md).
 
