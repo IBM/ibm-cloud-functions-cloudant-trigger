@@ -128,7 +128,7 @@ wsk package delete "openwhisk-cloudant"
 ```
 # Automation
 
-You can use an OpenWhisk deployment automation tool to automate deployment of Cloudant Trigger. Please follow the instructions in wskdeploy [README](wskdeploy/README.md).
+You can use an OpenWhisk deployment automation tool to automate deployment of Cloudant Trigger. Please refer to [README](wskdeploy/README.md) file.
 
 # Troubleshooting
 Check for errors first in the OpenWhisk activation log. Tail the log on the command line with `wsk activation poll` or drill into details visually with the [monitoring console on Bluemix](https://console.ng.bluemix.net/openwhisk/dashboard).
