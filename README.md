@@ -12,33 +12,34 @@ This example shows how to create an action that can be integrated with the built
 3. [Clean up](#3-clean-up)
 
 # 1. Configure Cloudant
-Log into Bluemix, create a [Cloudant database instance](https://console.ng.bluemix.net/catalog/services/cloudant-nosql-db/), and name it `openwhisk-cloudant`. Launch the Cloudant web console and create a database named `cats`. Extract the username and password from the "Service Credentials" tab in Bluemix and set these values as environment variables:
+## Provision a Cloudant service instance
+Log into Bluemix, create a [Cloudant database instance](https://console.ng.bluemix.net/catalog/services/cloudant-nosql-db/), and name it `openwhisk-cloudant`. Launch the Cloudant web console and create a database named `cats`. Set the corresponding names as environment variables in a terminal window:
 
 ```bash
 export CLOUDANT_INSTANCE="openwhisk-cloudant"
-export CLOUDANT_USERNAME=""
-export CLOUDANT_PASSWORD=""
-export CLOUDANT_HOSTNAME="$CLOUDANT_USERNAME.cloudant.com"
 export CLOUDANT_DATABASE="cats"
 ```
 
-In this demo, we will make use of the OpenWhisk Cloudant package, which contains a set of actions and feeds that integrate with a Cloudant database. Use the OpenWhisk CLI to bind the Cloudant package using your credentials. Binding a package allows you to set the default parameters that are inherited by every action and feed in the package.
+## Import the service credentials into the OpenWhisk environment
+We will make use of the built-in [OpenWhisk Cloudant package](https://github.com/apache/incubator-openwhisk-package-cloudant), which contains a set of actions and feeds that integrate with both Apache Kafka and IBM Message Hub (based on Kafka).
+
+On Bluemix, this package can be automatically configured with the credentials and connection information from the Message Hub instance we provisioned above. We make it available by refreshing our list of packages.
 
 ```bash
-wsk package bind /whisk.system/cloudant "$CLOUDANT_INSTANCE" \
-  --param username "$CLOUDANT_USERNAME" \
-  --param password "$CLOUDANT_PASSWORD" \
-  --param host "$CLOUDANT_HOSTNAME"
-```
-
-Triggers are a named channel for a class of events and can be explicitly fired by a user or fired on behalf of a user by an external event source, such as a feed. Use the code below to create a trigger to fire events when data is inserted into the "cats" database using the "changes" feed provided in the Cloudant package we just bound.
-```bash
-wsk trigger create data-inserted-trigger \
-  --feed "/_/openwhisk-cloudant/changes" \
-  --param dbname "$CLOUDANT_DATABASE"
+# Ensures the Cloudant credentials are available to OpenWhisk.
+wsk package refresh
 ```
 
 # 2. Create OpenWhisk actions
+## Attach a trigger to the Cloudant database
+Triggers can be explicitly fired by a user or fired on behalf of a user by an external event source, such as a feed. Use the code below to create a trigger to fire events when data is inserted into the "cats" database using the "changes" feed provided in the Cloudant package.
+```bash
+wsk trigger create data-inserted-trigger \
+  --feed Bluemix_${CLOUDANT_INSTANCE}_Credentials-1/changes \
+  --param dbname "$CLOUDANT_DATABASE"
+```
+
+## Create an action to process changes to the database
 Create a file named `process-change.js`. This file will define an OpenWhisk action written as a JavaScript function. This function will print out data that is written to Cloudant. For this example, we are expecting a cat with fields `name` and `color`.
 
 ```javascript
@@ -68,12 +69,12 @@ function main(params) {
 }
 ```
 
-## Create action sequence and map to trigger
-Create an OpenWhisk action from the JavaScript function that we just created.
+Create an OpenWhisk action from the JavaScript function.
 ```bash
 wsk action create process-change process-change.js
 ```
-OpenWhisk actions are stateless code snippets that can be invoked explicitly or in response to an event. To verify the creation of our action, invoke the action explicitly using the code below and pass the parameters using the `--param` command line argument.
+
+To verify the creation of our action and unit test its logic, invoke the action explicitly using the code below and pass the parameters using the `--param` command line arguments.
 ```bash
 wsk action invoke \
   --blocking \
@@ -81,24 +82,26 @@ wsk action invoke \
   --param color Tabby \
   process-change
 ```
-Chain together multiple actions using a sequence. Here we will connect the cloudant "read" action with the "process-change" action we just created. The parameters (`name` and `color`) outputed from the cloudant "read" action will be passed automatically into our "process-change" action.
+
+## Create an action sequence and map to the trigger with a rule
+We now chain together multiple actions using a sequence. Here we will connect the packaged Cloudant "read" action with the "process-change" action we just created. The parameters (`name` and `color`) output from the cloudant "read" action will be passed automatically to our "process-change" action.
 ``` bash
 wsk action create process-change-cloudant-sequence \
-  --sequence /_/openwhisk-cloudant/read,process-change
+  --sequence Bluemix_${CLOUDANT_INSTANCE}_Credentials-1/read,process-change
 ```
 
-Rules map triggers with actions. Create a rule that maps the database change trigger to the sequence we just created. Once this rule is created, the actions (or sequence of actions) will be executed whenever the trigger is fired in response to new data inserted into the cloudant database.
+Rules map triggers to actions. Create a rule that maps the database change trigger to the sequence we just created. Once this rule is created, the actions (or sequence of actions) will be executed whenever the trigger is fired in response to new data inserted into the Cloudant database.
 ```bash
 wsk rule create log-change-rule data-inserted-trigger process-change-cloudant-sequence
 ```
 
 ## Enter data to fire a change
-Begin streaming the OpenWhisk activation log in a new terminal window.
+Begin streaming the OpenWhisk activation log in a second terminal window.
 ```bash
 wsk activation poll
 ```
 
-In the Cloudant dashboard, create a new document in the "cats" database.
+In the Cloudant dashboard linked from the Bluemix console, create a new document in the "cats" database.
 ```json
 {
   "name": "Tarball",
@@ -106,10 +109,10 @@ In the Cloudant dashboard, create a new document in the "cats" database.
 }
 ```
 
-View the OpenWhisk log to look for the change notification.
+View the OpenWhisk log to look for the change notification. You should see activation records for the rule, the trigger, the sequence, and the actions.
 
 # 3. Clean up
-## Remove the API mappings and delete the actions
+## Remove the actions, triggers, rules, and package
 
 ```bash
 # Remove rule
@@ -124,7 +127,7 @@ wsk action delete process-change-cloudant-sequence
 wsk action delete process-change
 
 # Remove package
-wsk package delete "openwhisk-cloudant"
+wsk package delete Bluemix_${CLOUDANT_INSTANCE}_Credentials-1
 ```
 # Automation
 
