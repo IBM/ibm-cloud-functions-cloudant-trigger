@@ -30,7 +30,7 @@ On Bluemix, this package can be automatically configured with the credentials an
 wsk package refresh
 ```
 
-# 2. Create OpenWhisk actions
+# 2. Create OpenWhisk actions, triggers, and rules
 ## Attach a trigger to the Cloudant database
 Triggers can be explicitly fired by a user or fired on behalf of a user by an external event source, such as a feed. Use the code below to create a trigger to fire events when data is inserted into the "cats" database using the "changes" feed provided in the Cloudant package.
 ```bash
