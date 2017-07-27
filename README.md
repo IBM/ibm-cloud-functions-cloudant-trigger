@@ -1,5 +1,5 @@
 # OpenWhisk building block - Cloudant Trigger
-Create Cloudant data processing apps with Apache OpenWhisk on IBM Bluemix. This tutorial takes less than 5 minutes to complete. After this, move on to more complex serverless applications such as those tagged [_openwhisk-hands-on-demo_](https://github.com/search?q=topic%3Aopenwhisk-hands-on-demo+org%3AIBM&type=Repositories).
+Create Cloudant data processing apps with Apache OpenWhisk on IBM Bluemix. This tutorial should take about 5 minutes to complete. After this, move on to more complex serverless applications such as those tagged [_openwhisk-hands-on-demo_](https://github.com/search?q=topic%3Aopenwhisk-hands-on-demo+org%3AIBM&type=Repositories).
 
 ![Sample Architecture](https://openwhisk-ui-prod.cdn.us-south.s-bluemix.net/openwhisk/ngow-public/img/getting-started-database-changes.svg)
 
@@ -21,9 +21,9 @@ export CLOUDANT_DATABASE="cats"
 ```
 
 ## Import the service credentials into the OpenWhisk environment
-We will make use of the built-in [OpenWhisk Cloudant package](https://github.com/apache/incubator-openwhisk-package-cloudant), which contains a set of actions and feeds that integrate with both Apache Kafka and IBM Message Hub (based on Kafka).
+We will make use of the built-in [OpenWhisk Cloudant package](https://github.com/apache/incubator-openwhisk-package-cloudant), which contains a set of actions and feeds that integrate with the Cloudant Database-as-a-Service.
 
-On Bluemix, this package can be automatically configured with the credentials and connection information from the Message Hub instance we provisioned above. We make it available by refreshing our list of packages.
+On Bluemix, this package can be automatically configured with the credentials and connection information from the Cloudant instance we provisioned above. We make it available by refreshing our list of packages.
 
 ```bash
 # Ensures the Cloudant credentials are available to OpenWhisk.
