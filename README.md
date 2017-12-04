@@ -1,14 +1,14 @@
-# OpenWhisk building block - Cloudant Trigger
-Create Cloudant data processing apps with Apache OpenWhisk on IBM Bluemix. This tutorial should take about 5 minutes to complete. After this, move on to more complex serverless applications such as those tagged [_openwhisk-hands-on-demo_](https://github.com/search?q=topic%3Aopenwhisk-hands-on-demo+org%3AIBM&type=Repositories).
+# Triggering IBM Cloud Functions on Cloudant data changes
+Create Cloudant data processing apps with IBM Cloud Functions powered by Apache OpenWhisk. This tutorial should take about 5 minutes to complete. After this, move on to more complex serverless applications such as those tagged [_openwhisk-hands-on-demo_](https://github.com/search?q=topic%3Aopenwhisk-hands-on-demo+org%3AIBM&type=Repositories).
 
 ![Sample Architecture](openwhisk-cloudant-trigger.png)
 
-If you're not familiar with the OpenWhisk programming model [try the action, trigger, and rule sample first](https://github.com/IBM/openwhisk-action-trigger-rule). [You'll need a Bluemix account and the latest OpenWhisk command line tool](https://github.com/IBM/openwhisk-action-trigger-rule/blob/master/docs/OPENWHISK.md).
+If you're not familiar with the Cloud Functions/OpenWhisk programming model [try the action, trigger, and rule sample first](https://github.com/IBM/openwhisk-action-trigger-rule). [You'll need an IBM Cloud account and the latest OpenWhisk (`wsk`) or IBM Cloud command line plugin (`bx wsk`)](https://github.com/IBM/openwhisk-action-trigger-rule/blob/master/docs/OPENWHISK.md).
 
 This example shows how to create an action that can be integrated with the built in Cloudant changes trigger and read action to execute logic when new data is added.
 
 1. [Configure Cloudant](#1-configure-cloudant)
-2. [Create OpenWhisk actions](#2-create-openwhisk-actions)
+2. [Create Cloud Functions](#2-create-cloud-functions)
 3. [Clean up](#3-clean-up)
 
 # 1. Configure Cloudant
@@ -23,14 +23,14 @@ export CLOUDANT_DATABASE="cats"
 ## Import the service credentials into the OpenWhisk environment
 We will make use of the built-in [OpenWhisk Cloudant package](https://github.com/apache/incubator-openwhisk-package-cloudant), which contains a set of actions and feeds that integrate with the Cloudant Database-as-a-Service.
 
-On Bluemix, this package can be automatically configured with the credentials and connection information from the Cloudant instance we provisioned above. We make it available by refreshing our list of packages.
+With Cloud Functions on the IBM Cloud, this package can be automatically configured with the credentials and connection information from the Cloudant instance we provisioned above. We make it available by refreshing our list of packages.
 
 ```bash
-# Ensures the Cloudant credentials are available to OpenWhisk.
+# Ensures the Cloudant credentials are available to Cloud Functions.
 wsk package refresh
 ```
 
-# 2. Create OpenWhisk actions, triggers, and rules
+# 2. Create Cloud Functions
 ## Attach a trigger to the Cloudant database
 Triggers can be explicitly fired by a user or fired on behalf of a user by an external event source, such as a feed. Use the code below to create a trigger to fire events when data is inserted into the "cats" database using the "changes" feed provided in the Cloudant package.
 ```bash
@@ -40,7 +40,7 @@ wsk trigger create data-inserted-trigger \
 ```
 
 ## Create an action to process changes to the database
-Create a file named `process-change.js`. This file will define an OpenWhisk action written as a JavaScript function. This function will print out data that is written to Cloudant. For this example, we are expecting a cat with fields `name` and `color`.
+Create a file named `process-change.js`. This file will define an action written as a JavaScript function. This function will print out data that is written to Cloudant. For this example, we are expecting a cat with fields `name` and `color`.
 
 ```javascript
 function main(params) {
@@ -69,7 +69,7 @@ function main(params) {
 }
 ```
 
-Create an OpenWhisk action from the JavaScript function.
+Deploy an IBM Cloud Function from the JavaScript file.
 ```bash
 wsk action create process-change process-change.js
 ```
@@ -109,7 +109,7 @@ In the Cloudant dashboard linked from the Bluemix console, create a new document
 }
 ```
 
-View the OpenWhisk log to look for the change notification. You should see activation records for the rule, the trigger, the sequence, and the actions.
+View the Cloud Functions activation log to look for the change notification. You should see activation records for the rule, the trigger, the sequence, and the actions.
 
 # 3. Clean up
 ## Remove the actions, triggers, rules, and package
@@ -130,11 +130,10 @@ wsk action delete process-change
 wsk package delete Bluemix_${CLOUDANT_INSTANCE}_Credentials-1
 ```
 # Automation
-
-You can use an OpenWhisk deployment automation tool to automate deployment of Cloudant Trigger. Please refer to [README](wskdeploy/README.md) file.
+You can use the `wskdeploy` deployment automation tool to automate deployment of this Cloudant Trigger. Please refer to [README](wskdeploy/README.md) file.
 
 # Troubleshooting
-Check for errors first in the OpenWhisk activation log. Tail the log on the command line with `wsk activation poll` or drill into details visually with the [monitoring console on Bluemix](https://console.ng.bluemix.net/openwhisk/dashboard).
+Check for errors first in the Cloud Functions activation log. Tail the log on the command line with `wsk activation poll` or drill into details visually with the [Cloud Functions monitoring console](https://console.ng.bluemix.net/openwhisk/dashboard).
 
 If the error is not immediately obvious, make sure you have the [latest version of the `wsk` CLI installed](https://console.ng.bluemix.net/openwhisk/learn/cli). If it's older than a few weeks, download an update.
 ```bash
