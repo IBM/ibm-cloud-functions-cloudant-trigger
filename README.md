@@ -32,7 +32,7 @@ wsk package refresh
 
 # 2. Create Cloud Functions
 ## Attach a trigger to the Cloudant database
-Triggers can be explicitly fired by a user or fired on behalf of a user by an external event source, such as a feed. Use the code below to create a trigger to fire events when data is inserted into the "cats" database using the "changes" feed provided in the Cloudant package.
+Triggers can be explicitly fired by a user or fired on behalf of a user by an external event source, such as a feed. Use the code below to create a trigger to fire events when data is inserted into the `cats` database using the `changes` feed provided in the Cloudant package.
 ```bash
 wsk trigger create data-inserted-trigger \
   --feed Bluemix_${CLOUDANT_INSTANCE}_Credentials-1/changes \
@@ -84,7 +84,7 @@ wsk action invoke \
 ```
 
 ## Create an action sequence and map to the trigger with a rule
-We now chain together multiple actions using a sequence. Here we will connect the packaged Cloudant "read" action with the "process-change" action we just created. The parameters (`name` and `color`) output from the cloudant "read" action will be passed automatically to our "process-change" action.
+We now chain together multiple actions using a sequence. Here we will connect the packaged Cloudant `read` action with the `process-change` action we just created. The parameters (`name` and `color`) output from the cloudant `read` action will be passed automatically to our `process-change` action.
 ``` bash
 wsk action create process-change-cloudant-sequence \
   --sequence Bluemix_${CLOUDANT_INSTANCE}_Credentials-1/read,process-change
@@ -101,7 +101,7 @@ Begin streaming the OpenWhisk activation log in a second terminal window.
 wsk activation poll
 ```
 
-In the Cloudant dashboard linked from the Bluemix console, create a new document in the "cats" database.
+In the Cloudant dashboard linked from the Bluemix console, create a new document in the `cats` database.
 ```json
 {
   "name": "Tarball",
